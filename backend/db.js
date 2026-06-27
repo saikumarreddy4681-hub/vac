@@ -211,7 +211,9 @@ const dbWrapper = {
             let cleanSql = sql.trim();
 
             // 1. AUTO_INCREMENT -> SERIAL
-            if (cleanSql.toLowerCase().includes('auto_increment')) {
+            if (cleanSql.toLowerCase().includes('int auto_increment')) {
+                cleanSql = cleanSql.replace(/int\s+auto_increment/gi, 'SERIAL');
+            } else if (cleanSql.toLowerCase().includes('auto_increment')) {
                 cleanSql = cleanSql.replace(/auto_increment/gi, 'SERIAL');
             }
 
