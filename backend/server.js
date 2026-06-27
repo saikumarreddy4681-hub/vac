@@ -53,46 +53,42 @@ const connectDB = async () => {
         console.log('Connected to MongoDB');
         await cleanDuplicateReminderLogs();
     } catch (err) {
-        if (process.env.NODE_ENV !== 'production') {
-            console.log('Local MongoDB connection failed or MONGO_URI is missing. Starting in-memory database automatically...');
-            try {
-                const { MongoMemoryServer } = require('mongodb-memory-server');
-                const mongoServer = await MongoMemoryServer.create();
-                const uri = mongoServer.getUri();
-                await mongoose.connect(uri);
-                console.log('Connected to In-Memory MongoDB at', uri);
-                await cleanDuplicateReminderLogs();
+        console.warn('MongoDB connection failed or MONGO_URI is missing. Starting in-memory database as fallback...', err.message);
+        try {
+            const { MongoMemoryServer } = require('mongodb-memory-server');
+            const mongoServer = await MongoMemoryServer.create();
+            const uri = mongoServer.getUri();
+            await mongoose.connect(uri);
+            console.log('Connected to In-Memory MongoDB at', uri);
+            await cleanDuplicateReminderLogs();
 
-                // Auto-seed for convenience
-                const Vehicle = require('./models/Vehicle');
-                const Driver = require('./models/Driver');
-                const count = await Vehicle.countDocuments();
-                if (count === 0) {
-                    await Vehicle.insertMany([
-                        { name: "Toyota Innova Crysta", vehicleType: "Car", licensePlate: "CAR-001", status: "Available", imageUrl: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80" },
-                        { name: "Volvo Multi-axle", vehicleType: "Bus", licensePlate: "BUS-001", status: "Available", imageUrl: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=600&q=80" },
-                        { name: "Tata Starbus", vehicleType: "Bus", licensePlate: "BUS-002", status: "Available", imageUrl: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=600&q=80" },
-                        { name: "Maruti Swift", vehicleType: "Car", licensePlate: "CAR-002", status: "Available", imageUrl: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=600&q=80" }
-                    ]);
-                    console.log('In-Memory DB Seeded with initial vehicles.');
-                }
-
-                const driverCount = await Driver.countDocuments();
-                if (driverCount === 0) {
-                    await Driver.insertMany([
-                        { name: "Amit Sharma", licenseNumber: "DL-12345", status: "Available" },
-                        { name: "Rahul Verma", licenseNumber: "DL-67890", status: "Available" },
-                        { name: "Vikram Singh", licenseNumber: "DL-11223", status: "Available" },
-                        { name: "Suresh Kumar", licenseNumber: "DL-44556", status: "Available" }
-                    ]);
-                    console.log('In-Memory DB Seeded with initial drivers.');
-                }
-            } catch (memErr) {
-                console.error('Failed to start in-memory database:', memErr);
+            // Auto-seed for convenience
+            const Vehicle = require('./models/Vehicle');
+            const Driver = require('./models/Driver');
+            const count = await Vehicle.countDocuments();
+            if (count === 0) {
+                await Vehicle.insertMany([
+                    { name: "Toyota Innova Crysta", vehicleType: "Car", licensePlate: "CAR-001", status: "Available", imageUrl: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80" },
+                    { name: "Volvo Multi-axle", vehicleType: "Bus", licensePlate: "BUS-001", status: "Available", imageUrl: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=600&q=80" },
+                    { name: "Tata Starbus", vehicleType: "Bus", licensePlate: "BUS-002", status: "Available", imageUrl: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=600&q=80" },
+                    { name: "Maruti Swift", vehicleType: "Car", licensePlate: "CAR-002", status: "Available", imageUrl: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=600&q=80" }
+                ]);
+                console.log('In-Memory DB Seeded with initial vehicles.');
             }
-        } else {
-            console.error('Failed to connect to MongoDB in production:', err);
-            throw err;
+
+            const driverCount = await Driver.countDocuments();
+            if (driverCount === 0) {
+                await Driver.insertMany([
+                    { name: "Amit Sharma", licenseNumber: "DL-12345", status: "Available" },
+                    { name: "Rahul Verma", licenseNumber: "DL-67890", status: "Available" },
+                    { name: "Vikram Singh", licenseNumber: "DL-11223", status: "Available" },
+                    { name: "Suresh Kumar", licenseNumber: "DL-44556", status: "Available" }
+                ]);
+                console.log('In-Memory DB Seeded with initial drivers.');
+            }
+        } catch (memErr) {
+            console.error('Failed to start in-memory database:', memErr);
+            throw memErr;
         }
     }
 };
