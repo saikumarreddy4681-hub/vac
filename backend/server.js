@@ -146,15 +146,24 @@ app.use('/messages', messageRoutes);
 app.use('/customers', customerRoutes);
 app.use('/enquiries', enquiryRoutes);
 
-// Temporary debug endpoint to check DB schema
+// Temporary debug endpoint to check and clean DB schema
 app.get('/debug-db', (req, res) => {
     const db = require('./db');
-    db.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'vehicles'", (err, results) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(results);
-    });
+    if (req.query.action === 'drop') {
+        db.query("DROP TABLE IF EXISTS vehicles CASCADE", (err, results) => {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            res.json({ message: "Table 'vehicles' dropped successfully!" });
+        });
+    } else {
+        db.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'vehicles'", (err, results) => {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            res.json(results);
+        });
+    }
 });
 
 // Razorpay SDK Integration
