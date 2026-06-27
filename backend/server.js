@@ -25,16 +25,16 @@ const messageRoutes = require('./routes/messageRoutes');
 const customerRoutes = require('./routes/customerRoutes');
 const enquiryRoutes = require('./routes/enquiryRoutes');
 
-app.use('/api/vehicles', vehicleRoutes);
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/maintenance', maintenanceRoutes);
-app.use('/api/reports', reportRoutes);
-app.use('/api/status', reportRoutes);
-app.use('/api/drivers', driverRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/customers', customerRoutes);
-app.use('/api/enquiries', enquiryRoutes);
+app.use(['/api/vehicles', '/_/backend/vehicles', '/vehicles'], vehicleRoutes);
+app.use(['/api/bookings', '/_/backend/bookings', '/bookings'], bookingRoutes);
+app.use(['/api/maintenance', '/_/backend/maintenance', '/maintenance'], maintenanceRoutes);
+app.use(['/api/reports', '/_/backend/reports', '/reports'], reportRoutes);
+app.use(['/api/status', '/_/backend/status', '/status'], reportRoutes);
+app.use(['/api/drivers', '/_/backend/drivers', '/drivers'], driverRoutes);
+app.use(['/api/payments', '/_/backend/payments', '/payments'], paymentRoutes);
+app.use(['/api/messages', '/_/backend/messages', '/messages'], messageRoutes);
+app.use(['/api/customers', '/_/backend/customers', '/customers'], customerRoutes);
+app.use(['/api/enquiries', '/_/backend/enquiries', '/enquiries'], enquiryRoutes);
 
 // Razorpay SDK Integration
 const Razorpay = require('razorpay');
@@ -53,7 +53,7 @@ if (process.env.RAZORPAY_KEY_ID &&
 }
 
 // POST /api/create-order
-app.post('/api/create-order', async (req, res) => {
+app.post(['/api/create-order', '/_/backend/create-order', '/create-order'], async (req, res) => {
     try {
         const { amount, currency, bookingId } = req.body;
         // Convert to smallest currency unit (paise)
@@ -91,7 +91,7 @@ app.post('/api/create-order', async (req, res) => {
 });
 
 // POST /api/verify-payment
-app.post('/api/verify-payment', async (req, res) => {
+app.post(['/api/verify-payment', '/_/backend/verify-payment', '/verify-payment'], async (req, res) => {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
@@ -137,7 +137,7 @@ app.post('/api/verify-payment', async (req, res) => {
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-app.post("/api/ai-assistant", async(req,res)=>{
+app.post(["/api/ai-assistant", "/_/backend/ai-assistant", "/ai-assistant"], async(req,res)=>{
     try{
         const model = genAI.getGenerativeModel({
             model:"gemini-1.5-flash-latest"
@@ -207,11 +207,10 @@ const handleDirectEmail = async (req, res) => {
     }
 };
 
-app.post("/send-email", handleDirectEmail);
-app.post("/api/send-email", handleDirectEmail);
+app.post(["/send-email", "/api/send-email", "/_/backend/send-email"], handleDirectEmail);
 
 // POST /api/reminder - Direct reminder notification endpoint
-app.post("/api/reminder", async (req, res) => {
+app.post(["/api/reminder", "/_/backend/reminder", "/reminder"], async (req, res) => {
     const { bookingId, customerEmail, customerName, vehicleName, bookingDate, pickup, drop } = req.body;
 
     try {
