@@ -153,9 +153,9 @@ app.use('/enquiries', enquiryRoutes);
 // Razorpay SDK Integration
 const Razorpay = require('razorpay');
 let razorpay = null;
-if (process.env.RAZORPAY_KEY_ID && 
-    process.env.RAZORPAY_KEY_SECRET && 
-    process.env.RAZORPAY_KEY_ID !== 'your_key' && 
+if (process.env.RAZORPAY_KEY_ID &&
+    process.env.RAZORPAY_KEY_SECRET &&
+    process.env.RAZORPAY_KEY_ID !== 'your_key' &&
     process.env.RAZORPAY_KEY_SECRET !== 'your_secret') {
     razorpay = new Razorpay({
         key_id: process.env.RAZORPAY_KEY_ID,
@@ -251,10 +251,10 @@ app.post('/verify-payment', async (req, res) => {
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-app.post("/ai-assistant", async(req,res)=>{
-    try{
+app.post("/ai-assistant", async (req, res) => {
+    try {
         const model = genAI.getGenerativeModel({
-            model:"gemini-1.5-flash-latest"
+            model: "gemini-1.5-flash-latest"
         });
 
         const result = await model.generateContent(`
@@ -269,7 +269,7 @@ app.post("/ai-assistant", async(req,res)=>{
         res.json({
             message: result.response.text()
         });
-    } catch(error){
+    } catch (error) {
         console.log("AI API Error (likely an invalid or expired API Key):", error.message);
         // Fallback response so your UI still looks great and works during testing
         res.json({
@@ -351,7 +351,7 @@ app.post("/reminder", async (req, res) => {
             if (booking.reminderSent) {
                 return res.status(400).json({ success: false, error: "Reminder already sent for this booking." });
             }
-            
+
             // Check booking date
             if (!booking.startDate || isNaN(new Date(booking.startDate).getTime())) {
                 return res.status(400).json({ success: false, error: "Booking has an invalid start date." });
@@ -425,8 +425,9 @@ Thank you, RentalSys`;
 
 
 // Local development server listener
-if (process.env.NODE_ENV !== 'production') {
+if (require.main === module) {
     const PORT = process.env.PORT || 5000;
+
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
     });
