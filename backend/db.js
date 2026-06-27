@@ -195,6 +195,21 @@ const runMongooseQuery = (sql, values, callback) => {
     callback(new Error('Unsupported MySQL query in Mongoose fallback mode: ' + sql));
 };
 
+const normalizeRow = (row) => {
+    if (!row) return row;
+    const normalized = { ...row };
+    if ('vehicletype' in normalized && !('vehicleType' in normalized)) {
+        normalized.vehicleType = normalized.vehicletype;
+    }
+    if ('licenseplate' in normalized && !('licensePlate' in normalized)) {
+        normalized.licensePlate = normalized.licenseplate;
+    }
+    if ('imageurl' in normalized && !('imageUrl' in normalized)) {
+        normalized.imageUrl = normalized.imageurl;
+    }
+    return normalized;
+};
+
 const dbWrapper = {
     query: function(sql, values, callback) {
         if (typeof values === 'function') {
@@ -275,6 +290,8 @@ const dbWrapper = {
                     let rows = res.rows;
                     if (rows.length > 0 && rows[0].count !== undefined) {
                         rows = rows.map(r => ({ count: parseInt(r.count, 10) }));
+                    } else {
+                        rows = rows.map(normalizeRow);
                     }
                     callback(null, rows);
                 }
