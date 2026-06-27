@@ -1,28 +1,50 @@
 const mysql = require('mysql2');
+const pg = require('pg');
 const mongoose = require('mongoose');
 
-let useMongooseFallback = (process.env.NODE_ENV === 'production');
+const databaseUrl = process.env.DATABASE_URL || '';
+const isPostgres = databaseUrl.startsWith('postgres://') || databaseUrl.startsWith('postgresql://');
+
+let useMongooseFallback = (process.env.NODE_ENV === 'production' && !isPostgres);
 
 let connection = null;
-if (!useMongooseFallback) {
-    try {
-        connection = mysql.createConnection({
-            host: 'localhost',
-            user: 'root',
-            password: 'saikumar@4681P',
-            database: 'vehicle_available_calender',
-            connectTimeout: 2000
-        });
+let pgClient = null;
 
-        connection.connect(error => {
-            if (error) {
-                console.warn('[DB] Local MySQL connection failed. Falling back to Mongoose for vehicles.');
-                useMongooseFallback = true;
-            }
-        });
-    } catch (err) {
-        console.warn('[DB] Failed to initialize MySQL connection. Falling back to Mongoose.', err.message);
-        useMongooseFallback = true;
+if (!useMongooseFallback) {
+    if (isPostgres) {
+        console.log('[DB] Connecting to PostgreSQL (Neon)...');
+        try {
+            pgClient = new pg.Pool({
+                connectionString: databaseUrl,
+                ssl: {
+                    rejectUnauthorized: false
+                }
+            });
+            console.log('[DB] Neon PostgreSQL pool initialized.');
+        } catch (err) {
+            console.error('[DB] Failed to initialize Neon PostgreSQL:', err.message);
+            useMongooseFallback = true;
+        }
+    } else {
+        try {
+            connection = mysql.createConnection({
+                host: process.env.MYSQL_HOST || 'localhost',
+                user: process.env.MYSQL_USER || 'root',
+                password: process.env.MYSQL_PASSWORD || 'saikumar@4681P',
+                database: process.env.MYSQL_DATABASE || 'vehicle_available_calender',
+                connectTimeout: 2000
+            });
+
+            connection.connect(error => {
+                if (error) {
+                    console.warn('[DB] Local MySQL connection failed. Falling back to Mongoose for vehicles.');
+                    useMongooseFallback = true;
+                }
+            });
+        } catch (err) {
+            console.warn('[DB] Failed to initialize MySQL connection. Falling back to Mongoose.', err.message);
+            useMongooseFallback = true;
+        }
     }
 }
 
@@ -175,7 +197,6 @@ const runMongooseQuery = (sql, values, callback) => {
 
 const dbWrapper = {
     query: function(sql, values, callback) {
-        // Handle optional values parameter
         if (typeof values === 'function') {
             callback = values;
             values = [];
@@ -183,6 +204,67 @@ const dbWrapper = {
 
         if (useMongooseFallback) {
             runMongooseQuery(sql, values, callback);
+            return;
+        }
+
+        if (isPostgres && pgClient) {
+            let cleanSql = sql.trim();
+
+            // 1. AUTO_INCREMENT -> SERIAL
+            if (cleanSql.toLowerCase().includes('auto_increment')) {
+                cleanSql = cleanSql.replace(/auto_increment/gi, 'SERIAL');
+            }
+
+            // 2. MySQL bulk insert: "INSERT INTO vehicles (...) VALUES ?"
+            if (cleanSql.toLowerCase().startsWith('insert into vehicles') && Array.isArray(values[0]) && Array.isArray(values[0][0])) {
+                const rows = values[0];
+                const columns = 'name, vehicleType, licensePlate, status, imageUrl';
+                const placeholders = [];
+                const flatValues = [];
+                let counter = 1;
+                rows.forEach(row => {
+                    const rowPlaceholders = [];
+                    for (let i = 0; i < 5; i++) {
+                        rowPlaceholders.push(`$${counter}`);
+                        flatValues.push(row[i] !== undefined ? row[i] : null);
+                        counter++;
+                    }
+                    placeholders.push(`(${rowPlaceholders.join(', ')})`);
+                });
+                cleanSql = `INSERT INTO vehicles (${columns}) VALUES ${placeholders.join(', ')}`;
+                pgClient.query(cleanSql, flatValues, (err, res) => {
+                    if (err) return callback(err);
+                    callback(null, { affectedRows: res.rowCount, insertId: 1 });
+                });
+                return;
+            }
+
+            // 3. Convert "?" placeholders to "$1", "$2", etc.
+            let placeholderIndex = 0;
+            cleanSql = cleanSql.replace(/\?/g, () => {
+                placeholderIndex++;
+                return `$${placeholderIndex}`;
+            });
+
+            pgClient.query(cleanSql, values, (err, res) => {
+                if (err) {
+                    console.error('[DB] PostgreSQL query error:', err.message);
+                    return callback(err);
+                }
+                
+                const command = res.command.toLowerCase();
+                if (command === 'insert') {
+                    callback(null, { affectedRows: res.rowCount, insertId: res.rows[0] ? res.rows[0].id : 1 });
+                } else if (command === 'update' || command === 'delete') {
+                    callback(null, { affectedRows: res.rowCount });
+                } else {
+                    let rows = res.rows;
+                    if (rows.length > 0 && rows[0].count !== undefined) {
+                        rows = rows.map(r => ({ count: parseInt(r.count, 10) }));
+                    }
+                    callback(null, rows);
+                }
+            });
             return;
         }
 
