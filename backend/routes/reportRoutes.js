@@ -1,27 +1,47 @@
 const express = require('express');
 const router = express.Router();
-const Vehicle = require('../models/Vehicle');
+const db = require('../db');
 const Booking = require('../models/Booking');
 const Maintenance = require('../models/Maintenance');
+
+const getVehicles = () => {
+    return new Promise((resolve, reject) => {
+        db.query("SELECT * FROM vehicles", (error, results) => {
+            if (error) return reject(error);
+            resolve(results);
+        });
+    });
+};
 
 // GET /api/reports/availability
 router.get('/availability', async (req, res) => {
     try {
-        const vehicles = await Vehicle.find();
+        const vehicles = await getVehicles();
         const totalVehicles = vehicles.length;
         const availableCount = vehicles.filter(v => v.status === 'Available').length;
         const bookedCount = vehicles.filter(v => v.status === 'Booked').length;
         const maintenanceCount = vehicles.filter(v => v.status === 'Maintenance').length;
+
+        // Map fields to match Mongoose format just in case
+        const mappedVehicles = vehicles.map(v => ({
+            _id: v.id || v._id,
+            id: v.id || v._id,
+            name: v.name,
+            vehicleType: v.vehicleType,
+            licensePlate: v.licensePlate,
+            status: v.status,
+            imageUrl: v.imageUrl
+        }));
 
         res.json({
             totalVehicles,
             availableCount,
             bookedCount,
             maintenanceCount,
-            details: vehicles
+            details: mappedVehicles
         });
     } catch (error) {
-        res.status(500).json({ message: 'Server Error', error });
+        res.status(500).json({ message: 'Server Error', error: error.message || error });
     }
 });
 
@@ -31,7 +51,7 @@ router.get('/bookings', async (req, res) => {
         const bookings = await Booking.find().populate('vehicleId');
         res.json(bookings);
     } catch (error) {
-        res.status(500).json({ message: 'Server Error', error });
+        res.status(500).json({ message: 'Server Error', error: error.message || error });
     }
 });
 
@@ -41,15 +61,14 @@ router.get('/maintenance', async (req, res) => {
         const blocks = await Maintenance.find().populate('vehicleId');
         res.json(blocks);
     } catch (error) {
-        res.status(500).json({ message: 'Server Error', error });
+        res.status(500).json({ message: 'Server Error', error: error.message || error });
     }
 });
 
 // GET /api/status/summary
 router.get('/summary', async (req, res) => {
     try {
-        const vehicles = await Vehicle.find();
-        const totalVehicles = vehicles.length;
+        const vehicles = await getVehicles();
         const availableCount = vehicles.filter(v => v.status === 'Available').length;
         const bookedCount = vehicles.filter(v => v.status === 'Booked').length;
         const maintenanceCount = vehicles.filter(v => v.status === 'Maintenance').length;
@@ -65,7 +84,7 @@ router.get('/summary', async (req, res) => {
             maintenance: maintenanceCount
         });
     } catch (error) {
-        res.status(500).json({ message: 'Server Error', error });
+        res.status(500).json({ message: 'Server Error', error: error.message || error });
     }
 });
 
@@ -73,18 +92,19 @@ router.get('/summary', async (req, res) => {
 // Role: PDF or CSV export for summaries and admin reports
 router.get('/export/csv', async (req, res) => {
     try {
-        const vehicles = await Vehicle.find();
+        const vehicles = await getVehicles();
         
         let csvContent = 'ID,Name,Type,LicensePlate,Status\n';
         vehicles.forEach(v => {
-            csvContent += `${v._id},${v.name},${v.vehicleType},${v.licensePlate},${v.status}\n`;
+            const id = v.id || v._id;
+            csvContent += `${id},${v.name},${v.vehicleType},${v.licensePlate},${v.status}\n`;
         });
 
         res.header('Content-Type', 'text/csv');
         res.attachment('vehicles_report.csv');
         return res.send(csvContent);
     } catch (error) {
-        res.status(500).json({ message: 'Server Error', error });
+        res.status(500).json({ message: 'Server Error', error: error.message || error });
     }
 });
 
