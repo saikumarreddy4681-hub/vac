@@ -49,7 +49,7 @@ const PaymentsList = () => {
     const fetchPayments = async (silent = false) => {
         if (!silent) setLoading(true);
         try {
-            const res = await axios.get('http://localhost:5000/api/payments');
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/payments`);
             setPayments(res.data);
             setLoading(false);
         } catch (err) {
@@ -77,14 +77,14 @@ const PaymentsList = () => {
         e.preventDefault();
         const loadToast = toast.loading('Processing billing update...');
         try {
-            await axios.post(`http://localhost:5000/api/payments/${payingInvoice._id}/pay`, paymentForm);
+            await axios.post(`${import.meta.env.VITE_API_URL}/payments/${payingInvoice._id}/pay`, paymentForm);
             toast.success('Payment recorded and settled! 💵', { id: loadToast });
             setPayingInvoice(null);
             fetchPayments(true);
             
             // If the selected invoice details modal is open, update its state as well
             if (selectedInvoice && selectedInvoice._id === payingInvoice._id) {
-                const updatedPaymentsRes = await axios.get('http://localhost:5000/api/payments');
+                const updatedPaymentsRes = await axios.get(`${import.meta.env.VITE_API_URL}/payments`);
                 const fresh = updatedPaymentsRes.data.find(p => p._id === payingInvoice._id);
                 setSelectedInvoice(fresh);
             }

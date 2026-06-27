@@ -33,7 +33,7 @@ const CalendarView = () => {
             if (!startDate || !endDate) return;
             setLoading(true);
             try {
-                const res = await axios.get(`http://localhost:5000/api/vehicles/availability`, {
+                const res = await axios.get(`${import.meta.env.VITE_API_URL}/vehicles/availability`, {
                     params: { startDate, endDate }
                 });
                 setVehicles(res.data);

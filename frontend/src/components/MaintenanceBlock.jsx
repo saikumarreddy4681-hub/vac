@@ -37,8 +37,8 @@ const MaintenanceBlock = () => {
     const fetchData = async () => {
         try {
             const [vehiclesRes, blocksRes] = await Promise.all([
-                axios.get('http://localhost:5000/api/vehicles'),
-                axios.get('http://localhost:5000/api/maintenance')
+                axios.get(`${import.meta.env.VITE_API_URL}/vehicles`),
+                axios.get(`${import.meta.env.VITE_API_URL}/maintenance`)
             ]);
             setVehicles(vehiclesRes.data);
             setMaintenanceBlocks(blocksRes.data);
@@ -64,7 +64,7 @@ const MaintenanceBlock = () => {
         const loadingToast = toast.loading('Creating maintenance block...');
 
         try {
-            await axios.post('http://localhost:5000/api/maintenance/block', formData);
+            await axios.post(`${import.meta.env.VITE_API_URL}/maintenance/block`, formData);
             toast.success('Vehicle successfully blocked for maintenance.', { id: loadingToast });
             setFormData({ vehicleId: '', startDate: '', endDate: '', reason: '' });
             fetchData();
@@ -87,7 +87,7 @@ const MaintenanceBlock = () => {
                             toast.dismiss(t.id);
                             const actionToast = toast.loading('Removing maintenance block...');
                             try {
-                                await axios.delete(`http://localhost:5000/api/maintenance/${id}/unblock`);
+                                await axios.delete(`${import.meta.env.VITE_API_URL}/maintenance/${id}/unblock`);
                                 toast.success('Maintenance block removed successfully.', { id: actionToast });
                                 fetchData();
                             } catch {

@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const db = require('./db');
+// const db = require('./db');
 const cors = require('cors');
 require('dotenv').config();
 
@@ -346,56 +346,77 @@ const cleanDuplicateReminderLogs = async () => {
 };
 
 // Database Connection
-const startServer = async () => {
-    const PORT = process.env.PORT || 5000;
-
+const connectDB = async () => {
+    if (mongoose.connection.readyState >= 1) return;
     try {
         console.log('Attempting to connect to MongoDB...');
-        await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/vehicle_rental', { serverSelectionTimeoutMS: 3000 });
-        console.log('Connected to Local MongoDB');
+        if (!process.env.MONGO_URI) {
+            throw new Error('MONGO_URI is not defined in env variables');
+        }
+        await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 3000 });
+        console.log('Connected to MongoDB');
         await cleanDuplicateReminderLogs();
     } catch (err) {
-        console.log('Local MongoDB not running. Starting in-memory database automatically...');
-        try {
-            const { MongoMemoryServer } = require('mongodb-memory-server');
-            const mongoServer = await MongoMemoryServer.create();
-            const uri = mongoServer.getUri();
-            await mongoose.connect(uri);
-            console.log('Connected to In-Memory MongoDB at', uri);
-            await cleanDuplicateReminderLogs();
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('Local MongoDB connection failed or MONGO_URI is missing. Starting in-memory database automatically...');
+            try {
+                const { MongoMemoryServer } = require('mongodb-memory-server');
+                const mongoServer = await MongoMemoryServer.create();
+                const uri = mongoServer.getUri();
+                await mongoose.connect(uri);
+                console.log('Connected to In-Memory MongoDB at', uri);
+                await cleanDuplicateReminderLogs();
 
-            // Auto-seed for convenience
-            const Vehicle = require('./models/Vehicle');
-            const Driver = require('./models/Driver');
-            const count = await Vehicle.countDocuments();
-            if (count === 0) {
-                await Vehicle.insertMany([
-                    { name: "Toyota Innova Crysta", vehicleType: "Car", licensePlate: "CAR-001", status: "Available", imageUrl: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80" },
-                    { name: "Volvo Multi-axle", vehicleType: "Bus", licensePlate: "BUS-001", status: "Available", imageUrl: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=600&q=80" },
-                    { name: "Tata Starbus", vehicleType: "Bus", licensePlate: "BUS-002", status: "Available", imageUrl: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=600&q=80" },
-                    { name: "Maruti Swift", vehicleType: "Car", licensePlate: "CAR-002", status: "Available", imageUrl: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=600&q=80" }
-                ]);
-                console.log('In-Memory DB Seeded with initial vehicles.');
-            }
+                // Auto-seed for convenience
+                const Vehicle = require('./models/Vehicle');
+                const Driver = require('./models/Driver');
+                const count = await Vehicle.countDocuments();
+                if (count === 0) {
+                    await Vehicle.insertMany([
+                        { name: "Toyota Innova Crysta", vehicleType: "Car", licensePlate: "CAR-001", status: "Available", imageUrl: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80" },
+                        { name: "Volvo Multi-axle", vehicleType: "Bus", licensePlate: "BUS-001", status: "Available", imageUrl: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=600&q=80" },
+                        { name: "Tata Starbus", vehicleType: "Bus", licensePlate: "BUS-002", status: "Available", imageUrl: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=600&q=80" },
+                        { name: "Maruti Swift", vehicleType: "Car", licensePlate: "CAR-002", status: "Available", imageUrl: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=600&q=80" }
+                    ]);
+                    console.log('In-Memory DB Seeded with initial vehicles.');
+                }
 
-            const driverCount = await Driver.countDocuments();
-            if (driverCount === 0) {
-                await Driver.insertMany([
-                    { name: "Amit Sharma", licenseNumber: "DL-12345", status: "Available" },
-                    { name: "Rahul Verma", licenseNumber: "DL-67890", status: "Available" },
-                    { name: "Vikram Singh", licenseNumber: "DL-11223", status: "Available" },
-                    { name: "Suresh Kumar", licenseNumber: "DL-44556", status: "Available" }
-                ]);
-                console.log('In-Memory DB Seeded with initial drivers.');
+                const driverCount = await Driver.countDocuments();
+                if (driverCount === 0) {
+                    await Driver.insertMany([
+                        { name: "Amit Sharma", licenseNumber: "DL-12345", status: "Available" },
+                        { name: "Rahul Verma", licenseNumber: "DL-67890", status: "Available" },
+                        { name: "Vikram Singh", licenseNumber: "DL-11223", status: "Available" },
+                        { name: "Suresh Kumar", licenseNumber: "DL-44556", status: "Available" }
+                    ]);
+                    console.log('In-Memory DB Seeded with initial drivers.');
+                }
+            } catch (memErr) {
+                console.error('Failed to start in-memory database:', memErr);
             }
-        } catch (memErr) {
-            console.error('Failed to start in-memory database:', memErr);
+        } else {
+            console.error('Failed to connect to MongoDB in production:', err);
+            throw err;
         }
     }
+};
 
+// Middleware to ensure DB connection on serverless requests
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (dbErr) {
+        res.status(500).json({ message: 'Database connection failed', error: dbErr.message });
+    }
+});
+
+// Local development server listener
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
     });
-};
+}
 
-startServer();
+module.exports = app;

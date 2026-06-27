@@ -41,9 +41,9 @@ const Dashboard = () => {
     const fetchDashboardData = async (showToast = false) => {
         try {
             const [summaryRes, vehiclesRes, bookingsRes] = await Promise.all([
-                axios.get('http://localhost:5000/api/status/summary'),
-                axios.get('http://localhost:5000/api/vehicles'),
-                axios.get('http://localhost:5000/api/bookings')
+                axios.get(`${import.meta.env.VITE_API_URL}/status/summary`),
+                axios.get(`${import.meta.env.VITE_API_URL}/vehicles`),
+                axios.get(`${import.meta.env.VITE_API_URL}/bookings`)
             ]);
             setSummary(summaryRes.data);
             setVehiclesList(vehiclesRes.data);
@@ -361,7 +361,7 @@ const Dashboard = () => {
                             onClick={async () => {
                                 const loadingToast = toast.loading('Populating database with vehicles...');
                                 try {
-                                    const res = await axios.post('http://localhost:5000/api/vehicles/seed');
+                                    const res = await axios.post(`${import.meta.env.VITE_API_URL}/vehicles/seed`);
                                     toast.success(res.data.message || 'Database successfully seeded!', { id: loadingToast });
                                     fetchDashboardData();
                                 } catch (err) {

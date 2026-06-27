@@ -66,7 +66,7 @@ const VehiclesList = () => {
 
     const fetchVehicles = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/vehicles');
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/vehicles`);
             setVehicles(res.data);
             setLoading(false);
         } catch (err) {
@@ -140,10 +140,10 @@ const VehiclesList = () => {
         const loadToast = toast.loading(modalType === 'add' ? 'Adding vehicle to database...' : 'Updating vehicle details...');
         try {
             if (modalType === 'add') {
-                await axios.post('http://localhost:5000/api/vehicles', formData);
+                await axios.post(`${import.meta.env.VITE_API_URL}/vehicles`, formData);
                 toast.success('Vehicle successfully registered! 🚀', { id: loadToast });
             } else {
-                await axios.put(`http://localhost:5000/api/vehicles/${selectedVehicleId}`, formData);
+                await axios.put(`${import.meta.env.VITE_API_URL}/vehicles/${selectedVehicleId}`, formData);
                 toast.success('Vehicle updated successfully! 🛠️', { id: loadToast });
             }
             setModalOpen(false);
@@ -167,7 +167,7 @@ const VehiclesList = () => {
                             toast.dismiss(t.id);
                             const actionToast = toast.loading('Decommissioning vehicle...');
                             try {
-                                await axios.delete(`http://localhost:5000/api/vehicles/${id}`);
+                                await axios.delete(`${import.meta.env.VITE_API_URL}/vehicles/${id}`);
                                 toast.success('Vehicle removed from fleet database.', { id: actionToast });
                                 fetchVehicles();
                             } catch {
@@ -206,7 +206,7 @@ const VehiclesList = () => {
                 imageUrl: currentVehicle.imageUrl,
                 status: newStatus
             };
-            await axios.put(`http://localhost:5000/api/vehicles/${id}`, updatedData);
+            await axios.put(`${import.meta.env.VITE_API_URL}/vehicles/${id}`, updatedData);
             toast.success(`Vehicle marked as ${newStatus}!`, { id: loadToast });
             fetchVehicles();
         } catch (err) {

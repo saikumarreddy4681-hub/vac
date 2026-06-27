@@ -98,8 +98,8 @@ const BookingPage = () => {
         const fetchData = async () => {
             try {
                 const [vehiclesRes, driversRes] = await Promise.all([
-                    axios.get('http://localhost:5000/api/vehicles'),
-                    axios.get('http://localhost:5000/api/drivers/available')
+                    axios.get(`${import.meta.env.VITE_API_URL}/vehicles`),
+                    axios.get(`${import.meta.env.VITE_API_URL}/drivers/available`)
                 ]);
                 setVehicles(vehiclesRes.data);
                 setDrivers(driversRes.data);
@@ -145,7 +145,7 @@ const BookingPage = () => {
 
             if (hasDates) {
                 try {
-                    await axios.post('http://localhost:5000/api/bookings/check-conflict', {
+                    await axios.post(`${import.meta.env.VITE_API_URL}/bookings/check-conflict`, {
                         vehicleId, startDate, endDate
                     });
                     actualStatus = 'Available';
@@ -153,7 +153,7 @@ const BookingPage = () => {
                     if (err.response && err.response.status === 409) {
                         actualStatus = 'Conflict';
                         try {
-                            const res = await axios.get(`http://localhost:5000/api/vehicles/smart-suggest`, {
+                            const res = await axios.get(`${import.meta.env.VITE_API_URL}/vehicles/smart-suggest`, {
                                 params: { vehicleId, vehicleType: selectedVehicle.vehicleType, startDate, endDate }
                             });
                             if (isSubscribed) setAiSuggestions(res.data.aiSuggestions);
@@ -165,7 +165,7 @@ const BookingPage = () => {
             }
 
             try {
-                const response = await fetch("http://localhost:5000/api/ai-assistant", {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/ai-assistant`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -272,7 +272,7 @@ const BookingPage = () => {
     const fetchSmartSuggestions = async (vId, type, start, end) => {
         setCheckingAI(true);
         try {
-            const res = await axios.get(`http://localhost:5000/api/vehicles/smart-suggest`, {
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/vehicles/smart-suggest`, {
                 params: { vehicleId: vId, vehicleType: type, startDate: start, endDate: end }
             });
             setAiSuggestions(res.data.aiSuggestions);
@@ -308,7 +308,7 @@ const BookingPage = () => {
 
         try {
             // Check for conflict first
-            await axios.post('http://localhost:5000/api/bookings/check-conflict', {
+            await axios.post(`${import.meta.env.VITE_API_URL}/bookings/check-conflict`, {
                 vehicleId: formData.vehicleId,
                 startDate: formData.startDate,
                 endDate: formData.endDate
@@ -386,7 +386,7 @@ const BookingPage = () => {
         try {
             const selectedVehicle = vehicles.find(v => (v._id || v.id)?.toString() === formData.vehicleId?.toString());
 
-            const bookingRes = await axios.post('http://localhost:5000/api/bookings', {
+            const bookingRes = await axios.post(`${import.meta.env.VITE_API_URL}/bookings`, {
                 ...formData,
                 customerEmail: paymentEmail,
                 paymentMethod: selectedPaymentMethod,
@@ -422,7 +422,7 @@ const BookingPage = () => {
             toast.success("Trip successfully booked! ✅");
 
             // Trigger direct email sending in the background and reactively update the success modal
-            fetch("http://localhost:5000/send-email", {
+            fetch(`${import.meta.env.VITE_API_URL}/send-email`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -478,8 +478,8 @@ const BookingPage = () => {
 
         try {
             const [vehiclesRes, driversRes] = await Promise.all([
-                axios.get('http://localhost:5000/api/vehicles'),
-                axios.get('http://localhost:5000/api/drivers/available')
+                axios.get(`${import.meta.env.VITE_API_URL}/vehicles`),
+                axios.get(`${import.meta.env.VITE_API_URL}/drivers/available`)
             ]);
             setVehicles(vehiclesRes.data);
             setDrivers(driversRes.data);

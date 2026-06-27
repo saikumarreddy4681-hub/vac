@@ -32,8 +32,8 @@ const MessagesList = () => {
         if (!silent) setLoading(true);
         try {
             const [messagesRes, bookingsRes] = await Promise.all([
-                axios.get('http://localhost:5000/api/messages'),
-                axios.get('http://localhost:5000/api/bookings')
+                axios.get(`${import.meta.env.VITE_API_URL}/messages`),
+                axios.get(`${import.meta.env.VITE_API_URL}/bookings`)
             ]);
             setMessages(messagesRes.data);
             setBookings(bookingsRes.data);
@@ -69,7 +69,7 @@ const MessagesList = () => {
         const loadToast = toast.loading('Sending email reminder...');
 
         try {
-            await axios.post('http://localhost:5000/api/reminder', {
+            await axios.post(`${import.meta.env.VITE_API_URL}/reminder`, {
                 bookingId: booking._id,
                 customerEmail: booking.customerEmail,
                 customerName: booking.customerName,

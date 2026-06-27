@@ -42,7 +42,7 @@ const EnquiriesList = () => {
     const fetchEnquiries = async (silent = false) => {
         if (!silent) setLoading(true);
         try {
-            const res = await axios.get('http://localhost:5000/api/enquiries');
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/enquiries`);
             setEnquiries(res.data);
             setLoading(false);
             
@@ -66,7 +66,7 @@ const EnquiriesList = () => {
         e.preventDefault();
         const loadToast = toast.loading('Submitting new enquiry...');
         try {
-            await axios.post('http://localhost:5000/api/enquiries', newEnquiry);
+            await axios.post(`${import.meta.env.VITE_API_URL}/enquiries`, newEnquiry);
             toast.success("Enquiry submitted successfully! 🚀", { id: loadToast });
             setNewEnquiry({ customerName: '', customerEmail: '', message: '' });
             fetchEnquiries(true);
@@ -79,7 +79,7 @@ const EnquiriesList = () => {
     const handleUpdateStatus = async (enquiryId, newStatus) => {
         const loadToast = toast.loading(`Marking enquiry as ${newStatus}...`);
         try {
-            await axios.patch(`http://localhost:5000/api/enquiries/${enquiryId}/status`, { status: newStatus });
+            await axios.patch(`${import.meta.env.VITE_API_URL}/enquiries/${enquiryId}/status`, { status: newStatus });
             toast.success(`Enquiry successfully marked as ${newStatus}!`, { id: loadToast });
             fetchEnquiries(true);
         } catch (err) {
@@ -94,7 +94,7 @@ const EnquiriesList = () => {
         const loadToast = toast.loading('Logging CRM follow-up note...');
 
         try {
-            await axios.post(`http://localhost:5000/api/enquiries/${selectedEnquiry._id}/follow-up`, {
+            await axios.post(`${import.meta.env.VITE_API_URL}/enquiries/${selectedEnquiry._id}/follow-up`, {
                 notes: followUpNotes
             });
             setFollowUpNotes('');

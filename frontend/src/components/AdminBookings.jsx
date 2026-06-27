@@ -31,7 +31,7 @@ const AdminBookings = () => {
 
     const fetchBookings = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/bookings');
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/bookings`);
             setBookings(res.data);
             setLoading(false);
         } catch (err) {
@@ -57,7 +57,7 @@ const AdminBookings = () => {
                             toast.dismiss(t.id);
                             const actToast = toast.loading('Synchronizing state...');
                             try {
-                                await axios.patch(`http://localhost:5000/api/bookings/${bookingId}/status`, { status: newStatus });
+                                await axios.patch(`${import.meta.env.VITE_API_URL}/bookings/${bookingId}/status`, { status: newStatus });
                                 toast.success(`Booking status set to ${newStatus}!`, { id: actToast });
                                 fetchBookings();
                             } catch (err) {

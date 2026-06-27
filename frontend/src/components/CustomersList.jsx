@@ -41,7 +41,7 @@ const CustomersList = () => {
 
     const fetchCustomers = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/customers');
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/customers`);
             setCustomers(res.data);
             setLoading(false);
         } catch (err) {
@@ -65,7 +65,7 @@ const CustomersList = () => {
         });
         
         try {
-            const res = await axios.get(`http://localhost:5000/api/customers/${cust._id}/trips`);
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/customers/${cust._id}/trips`);
             setTrips(res.data);
         } catch (err) {
             console.error("Error fetching trips:", err);
@@ -77,7 +77,7 @@ const CustomersList = () => {
         e.preventDefault();
         const loadToast = toast.loading('Updating customer profile...');
         try {
-            const res = await axios.put(`http://localhost:5000/api/customers/${selectedCustomer._id}`, editForm);
+            const res = await axios.put(`${import.meta.env.VITE_API_URL}/customers/${selectedCustomer._id}`, editForm);
             setSelectedCustomer(res.data.customer);
             setIsEditing(false);
             toast.success("Profile updated successfully! ✅", { id: loadToast });
@@ -101,9 +101,9 @@ const CustomersList = () => {
                             toast.dismiss(t.id);
                             const actToast = toast.loading('Updating booking status...');
                             try {
-                                await axios.patch(`http://localhost:5000/api/bookings/${bookingId}/status`, { status: newStatus });
+                                await axios.patch(`${import.meta.env.VITE_API_URL}/bookings/${bookingId}/status`, { status: newStatus });
                                 // Refresh trips
-                                const res = await axios.get(`http://localhost:5000/api/customers/${selectedCustomer._id}/trips`);
+                                const res = await axios.get(`${import.meta.env.VITE_API_URL}/customers/${selectedCustomer._id}/trips`);
                                 setTrips(res.data);
                                 toast.success(`Trip successfully marked as ${newStatus}!`, { id: actToast });
                             } catch (err) {

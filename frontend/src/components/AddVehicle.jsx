@@ -63,7 +63,7 @@ const AddVehicle = () => {
         const loadingToast = toast.loading('Adding vehicle to database...');
 
         try {
-            await axios.post('http://localhost:5000/api/vehicles', formData);
+            await axios.post(`${import.meta.env.VITE_API_URL}/vehicles`, formData);
             toast.success('Vehicle added successfully to fleet! 🚀', { id: loadingToast });
             
             // Reset form
