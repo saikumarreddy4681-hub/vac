@@ -249,7 +249,19 @@ const dbWrapper = {
             pgClient.query(cleanSql, values, (err, res) => {
                 if (err) {
                     console.error('[DB] PostgreSQL query error:', err.message);
-                    return callback(err);
+                    const isConnectionError = err.code?.startsWith('08') || 
+                                              err.code === 'ECONNREFUSED' || 
+                                              err.message.includes('connect') || 
+                                              err.message.includes('timeout') || 
+                                              err.message.includes('SSL');
+                    if (isConnectionError) {
+                        console.warn('[DB] PostgreSQL connection failed. Falling back to Mongoose dynamically:', err.message);
+                        useMongooseFallback = true;
+                        runMongooseQuery(sql, values, callback);
+                    } else {
+                        callback(err);
+                    }
+                    return;
                 }
                 
                 const command = res.command.toLowerCase();
