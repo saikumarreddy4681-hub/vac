@@ -1,0 +1,203 @@
+@import "tailwindcss";
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6, .font-title {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Dynamic Premium Backgrounds with Ambient Glow & Cyber Grid */
+.animated-bg-light {
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0, transparent 50%), 
+    radial-gradient(at 50% 0%, rgba(14, 165, 233, 0.1) 0, transparent 50%), 
+    radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.08) 0, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(99, 102, 241, 0.08) 0, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.08) 0, transparent 50%),
+    linear-gradient(to right, rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+  background-attachment: fixed;
+}
+
+.animated-bg-dark {
+  background-color: #080c14;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.18) 0, transparent 55%), 
+    radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.14) 0, transparent 55%), 
+    radial-gradient(at 50% 100%, rgba(79, 70, 229, 0.18) 0, transparent 60%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+  background-attachment: fixed;
+}
+
+/* Glassmorphism Cards & Containers */
+.bg-white,
+[class*="bg-white/"] {
+  background-color: rgba(255, 255, 255, 0.82) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Intelligent Dark Mode overrides for glassmorphic elements */
+.animated-bg-dark .bg-white,
+.animated-bg-dark [class*="bg-white/"] {
+  background-color: rgba(15, 23, 42, 0.75) !important;
+  border-color: rgba(255, 255, 255, 0.07) !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+}
+
+.animated-bg-dark .text-gray-900,
+.animated-bg-dark .text-gray-800,
+.animated-bg-dark h1,
+.animated-bg-dark h2,
+.animated-bg-dark h3,
+.animated-bg-dark h4 {
+  color: #f1f5f9 !important;
+}
+
+.animated-bg-dark .text-gray-700,
+.animated-bg-dark .text-gray-600,
+.animated-bg-dark td {
+  color: #cbd5e1 !important;
+}
+
+.animated-bg-dark .text-gray-500,
+.animated-bg-dark .text-gray-400 {
+  color: #94a3b8 !important;
+}
+
+.animated-bg-dark .bg-gray-50,
+.animated-bg-dark [class*="bg-gray-50"] {
+  background-color: rgba(30, 41, 59, 0.5) !important;
+}
+
+.animated-bg-dark .border-gray-100,
+.animated-bg-dark .border-gray-150,
+.animated-bg-dark .border-gray-200 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.animated-bg-dark input,
+.animated-bg-dark select,
+.animated-bg-dark textarea {
+  background-color: rgba(30, 41, 59, 0.3) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f1f5f9 !important;
+}
+
+.animated-bg-dark select option,
+.animated-bg-dark select optgroup {
+  background-color: #1e293b !important;
+  color: #f1f5f9 !important;
+}
+
+select option,
+select optgroup {
+  background-color: #ffffff;
+  color: #1e293b;
+}
+
+.animated-bg-dark input::placeholder {
+  color: #64748b !important;
+}
+
+.animated-bg-dark th {
+  color: #94a3b8 !important;
+  background-color: rgba(15, 23, 42, 0.2) !important;
+}
+
+.animated-bg-dark .divide-y > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.animated-bg-dark .hover\:bg-gray-50\/40:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+.animated-bg-dark .bg-indigo-50 {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  color: #a5b4fc !important;
+}
+
+/* Availability & Status Badges/Cards in Dark Mode */
+.animated-bg-dark .bg-green-100 {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.25) !important;
+  color: #34d399 !important;
+}
+.animated-bg-dark .bg-green-100 h3 { color: #34d399 !important; }
+.animated-bg-dark .bg-green-100 p { color: #a7f3d0 !important; }
+.animated-bg-dark .bg-green-100 .bg-white {
+  background-color: rgba(16, 185, 129, 0.18) !important;
+  color: #34d399 !important;
+  border: none !important;
+}
+
+.animated-bg-dark .bg-red-100 {
+  background-color: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.25) !important;
+  color: #f87171 !important;
+}
+.animated-bg-dark .bg-red-100 h3 { color: #f87171 !important; }
+.animated-bg-dark .bg-red-100 p { color: #fecdd3 !important; }
+.animated-bg-dark .bg-red-100 .bg-white {
+  background-color: rgba(239, 68, 68, 0.18) !important;
+  color: #f87171 !important;
+  border: none !important;
+}
+
+.animated-bg-dark .bg-yellow-100 {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  border-color: rgba(245, 158, 11, 0.25) !important;
+  color: #fbbf24 !important;
+}
+.animated-bg-dark .bg-yellow-100 h3 { color: #fbbf24 !important; }
+.animated-bg-dark .bg-yellow-100 p { color: #fef3c7 !important; }
+.animated-bg-dark .bg-yellow-100 .bg-white {
+  background-color: rgba(245, 158, 11, 0.18) !important;
+  color: #fbbf24 !important;
+  border: none !important;
+}
+
+/* Premium Keyframe Animations for Drawer & Modals */
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom Telemetry Scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
